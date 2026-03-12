@@ -4,218 +4,165 @@
 
 ## Introduction
 
-In this task, we implemented the **perception module** for the RoboGambit system.  
-The goal of this module is to analyze an image of the physical chess board and determine the **current board configuration automatically**.
+In this task, we developed the **perception module** for the RoboGambit system.  
+The goal of this module is to analyze an image of the physical chess board and automatically determine the **current board configuration**.
 
-The system detects **ArUco markers placed on the pieces and board corners**, converts their pixel locations into real-world coordinates, and finally maps each piece to the correct square of the **6×6 chess board**.
+To achieve this, we used **ArUco markers** placed on the chess pieces and on the four corners of the board. By detecting these markers in the image, the system can identify where each piece is located and map it to the correct square of the **6 × 6 chess board**.
 
-This allows the robot system to understand the board state from a camera image and pass the detected board configuration to the game engine.
+This allows the robot system to observe the board using a camera, understand the game state, and pass that information to the game engine for decision making.
 
 ---
 
 ## Libraries Used
 
-The perception system is implemented in **Python** using the following libraries:
+The perception system was implemented in **Python** using a few commonly used libraries for computer vision and numerical processing.
 
-- **OpenCV** – for image processing and ArUco marker detection  
-- **NumPy** – for matrix operations and board representation  
-- **sys** – for command line input
+- **OpenCV** – used for image processing and ArUco marker detection  
+- **NumPy** – used for handling matrices and representing the board state  
+- **sys** – used for handling command line inputs when running the program
 
-Example import section from the code:
-
-```python
-import cv2
-import numpy as np
-import sys
-
-## Camera Calibration
-
-To correctly interpret the image, the camera parameters are defined using a camera matrix.
-
-This matrix contains the focal length and optical center of the camera.
-
-Example from the implementation:
-
-self.camera_matrix = np.array([
-    [1030.4890823364258, 0, 960],
-    [0, 1030.489103794098, 540],
-    [0, 0, 1]
-], dtype=np.float32)
-
-self.dist_coeffs = np.zeros((1, 5))
-
-The image is first undistorted before further processing.
-
-Example:
-undistorted = cv2.undistort(
-    image,
-    self.camera_matrix,
-    self.dist_coeffs,
-    None,
-    self.camera_matrix
-)
-## ArUco Marker Detection
-
-ArUco markers are used to identify both board corners and game pieces.
-
-The OpenCV ArUco dictionary used is:
-
-self.aruco_dict = cv2.aruco.getPredefinedDictionary(
-    cv2.aruco.DICT_4X4_50
-)
-The detector then scans the grayscale image for markers:
-corners, ids, _ = self.detector.detectMarkers(gray)
-
-Detected markers are also drawn on the image for visualization:
-cv2.aruco.drawDetectedMarkers(undistorted, corners, ids)
-
-## Board Corner Detection
-
-Four markers are placed at the corners of the board to establish the board coordinate system.
-
-Marker ID	Board Corner
-21	Top Left
-22	Bottom Left
-23	Bottom Right
-24	Top Right
-
-These markers help compute a transformation between image coordinates and real-world board coordinates.
-
-Example mapping in the code:
-
-self.corner_world = {
-    21: (350, 350),
-    22: (350, -350),
-    23: (-350, -350),
-    24: (-350, 350)
-}
-
-## Pixel to World Coordinate Transformation
-
-Once the corner markers are detected, the program computes a transformation that converts pixel positions into board coordinates.
-
-Example:
-
-self.H_matrix, _ = cv2.findHomography(pixel_pts, world_pts)
-
-
-Then each marker center can be converted into world coordinates:
-
-world = cv2.perspectiveTransform(pixel, self.H_matrix)
-
-
-This step allows us to determine where each piece lies on the board.
-
-## Board Representation
-
-The detected board state is stored as a 6 × 6 NumPy array.
-
-self.board = np.zeros((6, 6), dtype=int)
-
-
-Each number represents a piece detected on that square.
-
-For example:
-
-[[0 0 0 0 0 0]
- [0 1 0 0 0 0]
- [0 0 0 7 0 0]
- [0 0 0 0 0 0]
- [0 0 3 0 0 0]
- [0 0 0 0 0 0]]
-
-## Mapping Pieces to Board Squares
-
-Once the world coordinates of a marker are known, they are converted into row and column positions on the board.
-
-Example from the code:
-
-col = int((x_coord - board_min) / square_size)
-row = int((300 - y_coord) / square_size)
-
-
-Values are then clamped to stay within the board limits:
-
-if col < 0: col = 0
-if col > 5: col = 5
-if row < 0: row = 0
-if row > 5: row = 5
-
-
-Finally, the piece ID is placed in the board array:
-
-self.board[row][col] = piece_id
-
-## Visualizing the Board
-
-To make the detected board easier to understand, a visual board representation is generated.
-
-Each square is drawn using OpenCV and piece IDs are displayed inside the squares.
-
-Example:
-
-cv2.rectangle(board_img, (x1, y1),
-              (x2, y2), (0, 0, 0), 2)
-
-cv2.putText(board_img,
-            str(piece),
-            (x1 + 25, y1 + 50),
-            cv2.FONT_HERSHEY_SIMPLEX,
-            1,
-            (0, 0, 255),
-            2)
-
-
-This produces a visual grid showing the detected pieces.
-
-## Running the Program
-
-The perception program is executed from the command line by providing an image.
-
-Example:
-
-python perception.py image.png
-
-
-The program then:
-
-Loads the image
-
-Detects all markers
-
-Converts marker positions to board coordinates
-
-Generates the board configuration
-
-Displays the detected board
-
-Example code from main():
-
-path = sys.argv[1]
-
-image = cv2.imread(path)
-
-perception = RoboGambit_Perception()
-
-perception.process_image(image)
-
-## Output
-
-Two windows are displayed:
-
-Detected Markers – shows the camera image with detected markers.
-
-Game Board – shows the reconstructed board state.
-
-This allows us to visually verify whether pieces are placed correctly.
-
-## Conclusion
-
-In this task, we built a perception module capable of detecting a physical chess board configuration using ArUco markers. The system processes camera images, detects marker positions, converts them into board coordinates, and reconstructs the current game state.
-
-This perception system acts as the bridge between the physical board and the RoboGambit chess engine, enabling the robot to understand the real-world board and make intelligent decisions based on the detected positions.
-
+These libraries make it easier to process images, perform coordinate transformations, and manage board data efficiently.
 
 ---
 
+## Camera Calibration
+
+Before analyzing the board image, the camera parameters must be defined so that the system can correctly interpret the captured image.
+
+These parameters describe properties of the camera such as its focal length and optical center. Using these values, the captured image can be corrected for distortions.
+
+The system first performs **image undistortion**, which ensures that straight lines on the board appear straight in the processed image. This step improves the accuracy of marker detection and coordinate calculations.
+
+---
+
+## ArUco Marker Detection
+
+The system uses **ArUco markers** to detect important elements in the scene.
+
+These markers are small square patterns that can be easily recognized by computer vision algorithms. Each marker has a unique ID, which allows the system to distinguish between different pieces and board corners.
+
+When the program processes the image, it scans the grayscale version of the image to detect all visible markers. The detected markers can also be highlighted visually on the image so that it is easy to verify whether detection is working correctly.
+
+For example, after detection, the program can display the image with bounding boxes drawn around each marker.
+
+---
+
+## Board Corner Detection
+
+To understand the orientation and position of the chess board, four special markers are placed at the corners of the board.
+
+These markers define the coordinate system of the board.
+
+| Marker ID | Board Corner |
+|-----------|-------------|
+| 21 | Top Left |
+| 22 | Bottom Left |
+| 23 | Bottom Right |
+| 24 | Top Right |
+
+By detecting these four markers, the system can determine the boundaries of the board and calculate how the board appears in the camera image.
+
+---
+
+## Pixel to World Coordinate Transformation
+
+Once the board corners are detected, the next step is to convert **pixel coordinates from the image into board coordinates**.
+
+This is done by computing a transformation between the image plane and the board plane. Using this transformation, the position of each detected marker can be translated into real board coordinates.
+
+For example, a marker detected near the center of the image may correspond to a square near the middle of the chess board.
+
+This transformation is an important step because it allows the system to accurately determine which square each piece belongs to.
+
+---
+
+## Board Representation
+
+After detecting all pieces, the system constructs a **6 × 6 board representation**.
+
+The board is stored as a grid where each cell represents one square of the chess board. Each cell contains a number representing the piece located on that square.
+
+For example, a detected board configuration might look like:
+[[0 0 0 0 0 0]
+[0 1 0 0 0 0]
+[0 0 0 7 0 0]
+[0 0 0 0 0 0]
+[0 0 3 0 0 0]
+[0 0 0 0 0 0]]
+
+
+Here:
+
+- `0` represents an empty square  
+- other numbers correspond to specific chess pieces  
+
+This board structure can then be directly passed to the game engine.
+
+---
+
+## Mapping Pieces to Board Squares
+
+After calculating the world coordinates of each marker, the system determines which square of the board it belongs to.
+
+This is done by dividing the board area into equal-sized squares and calculating the row and column for each detected marker.
+
+For example, if a marker is detected near the center of the board, it may correspond to a square such as **C3 or D3** depending on its exact position.
+
+To ensure stability, the calculated row and column values are constrained so that they always remain within the **6 × 6 board limits**.
+
+Once the correct square is determined, the corresponding piece ID is stored in the board representation.
+
+---
+
+## Visualizing the Board
+
+To make it easier to verify the results, the system also generates a **visual board representation**.
+
+A grid is drawn to represent the chess board, and the detected piece IDs are displayed inside their corresponding squares.
+
+This visual output helps confirm that the pieces are mapped to the correct locations.
+
+For example, the visualization may show a grid where each square contains a number representing the detected piece.
+
+---
+
+## Running the Program
+
+The perception module is designed to run from the command line by providing an image of the chess board.
+
+When the program runs, it performs the following steps:
+
+1. Loads the input image  
+2. Detects all ArUco markers  
+3. Identifies the board corners  
+4. Converts marker positions to board coordinates  
+5. Reconstructs the board configuration  
+
+This process allows the system to automatically interpret the board state from a single image.
+
+---
+
+## Output
+
+After processing the image, the system displays two visual outputs:
+
+**Detected Markers**
+
+This window shows the original camera image with all detected markers highlighted.
+
+**Game Board**
+
+This window displays the reconstructed board state as a grid with piece identifiers.
+
+These visualizations help verify whether the detection and mapping steps are working correctly.
+
+---
+
+## Conclusion
+
+In this task, we developed a perception module capable of detecting a physical chess board configuration using **ArUco markers**.
+
+The system processes camera images, identifies marker locations, converts those positions into board coordinates, and reconstructs the full board state.
+
+This module acts as the bridge between the **physical chess board and the RoboGambit game engine**, allowing the robot to understand the real-world board configuration and make intelligent decisions based on the detected positions.
 
