@@ -51,6 +51,7 @@ While developing this component, our main focus was to ensure that the system co
 We paid special attention to maintaining consistency in board representation and ensuring that each move correctly updates the board state. Different board configurations were tested during development to verify that the engine behaves correctly in a wide range of situations.
 
 This component forms the decision-making part of the system.
+for more information on task1 refer https://github.com/vanshika-15dh/SHEBOTS_HIMADRI/blob/main/task%201/readme.md
 
 ---
 
