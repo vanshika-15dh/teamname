@@ -1373,7 +1373,20 @@ def get_best_move(board: np.ndarray,
 
     sr, sc, dr, dc = dec(mv)
     p = int(flat[sr*6+sc])
-    return f"{p}:{COL_TO_FILE[sc]}{sr+1}->{COL_TO_FILE[dc]}{dr+1}"
+
+    move = f"{p}:{COL_TO_FILE[sc]}{sr+1}->{COL_TO_FILE[dc]}{dr+1}"
+
+    # Always print promotion format
+    if p == 1 and dr == 5:
+        promo = 4
+    elif p == 6 and dr == 0:
+        promo = 9
+    else:
+        promo = p   # if not promotion just repeat same piece
+
+    move += f"={promo}"
+
+    return move
 
 
 if __name__ == '__main__':
