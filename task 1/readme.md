@@ -51,7 +51,7 @@ def decode_move(move):
 
 Using integers instead of complex objects helps reduce memory usage and speeds up comparisons inside the search.
 
-##Exploring Possible Moves
+## Exploring Possible Moves
 To choose the best move, the engine first generates all legal moves for the current player. For each move:
 
 The move is temporarily applied to the board.
@@ -71,7 +71,7 @@ def make_move(board, move):
     board[dst] = piece
 During this exploration, the engine keeps track of the best position found so far. If it becomes clear that a certain path cannot lead to a better result, the engine stops exploring that path (similar to alpha–beta pruning).
 
-##Gradual Deepening of Search
+## Gradual Deepening of Search
 Instead of immediately searching very deep positions, the engine analyzes the game in stages. It first looks a few moves ahead and then gradually increases the depth.
 
 Example structure:
@@ -91,7 +91,7 @@ def iterative_search(board, max_depth):
     return best_move
 This approach ensures that the engine always has a valid move ready, even if the time limit is reached before the deepest search finishes.
 
-##Position Evaluation
+## Position Evaluation
 When the engine reaches the end of a search branch, it estimates how favorable the board position is. The evaluation mainly considers:
 
 Material balance
@@ -132,7 +132,7 @@ def search_with_cache(board, depth):
     return score
 This significantly improves performance when the search goes deeper.
 
-##Pawn Promotion Rule
+## Pawn Promotion Rule
 The promotion rule used in this variant differs slightly from standard chess. A pawn can only promote to a piece that has already been captured earlier in the game.
 
 Example logic:
@@ -146,7 +146,7 @@ def handle_promotion(board, index, captured_pieces, is_white):
 
 This rule makes promotion more dynamic and depends on how the game has progressed.
 
-##Testing the Engine
+## Testing the Engine
 To verify the engine’s behavior, we tested it with two types of starting boards.
 
 Fixed Starting Position
@@ -162,7 +162,7 @@ fixed_board = np.array([
     7, 8, 9,10, 8, 7,
 ], dtype=int)
 
-##Randomized Starting Position
+## Randomized Starting Position
 Back rank pieces are shuffled while keeping bishops on opposite colors.
 import numpy as np
 import random
@@ -180,7 +180,7 @@ for c, p in enumerate(back):
 
 Randomized setups ensure the engine handles a wide range of positions.
 
-##Final Move Output
+## Final Move Output
 Once the engine finishes its analysis, it returns the selected move in the format:
 <piece_id>:<source_square>-><destination_square>
 
@@ -188,7 +188,7 @@ Example output:
 1:A2->A3
 This means a white pawn moves from A2 to A3.
 
-##Conclusion
+## Conclusion
 In this project, we implemented a chess engine capable of playing a 6×6 chess variant. The engine generates moves, explores possible continuations of the game, evaluates board positions, and selects a move that appears most promising.
 
 Through efficient board representation, careful exploration of game states, and reuse of previously analyzed positions, the engine is able to analyze deeper positions within a limited time.
